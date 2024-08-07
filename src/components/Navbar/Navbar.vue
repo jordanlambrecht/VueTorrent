@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useDashboardStore, useNavbarStore, useVueTorrentStore } from '@/stores'
+import { useScreenSafeArea } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import BottomActions from './SideWidgets/BottomActions.vue'
 import CurrentSpeed from './SideWidgets/CurrentSpeed.vue'
@@ -11,10 +13,18 @@ import TransferStats from './SideWidgets/TransferStats.vue'
 import ActiveFilters from './TopWidgets/ActiveFilters.vue'
 import TopContainer from './TopWidgets/TopContainer.vue'
 
+const { top, bottom, left, right } = useScreenSafeArea()
+
 const router = useRouter()
 const dashboardStore = useDashboardStore()
 const { isDrawerOpen } = storeToRefs(useNavbarStore())
 const { isDrawerRight, showCurrentSpeed, showSpeedGraph, showAlltimeStat, showSessionStat, showFreeSpace } = storeToRefs(useVueTorrentStore())
+
+const topPadding = computed(() => `padding-top: ${top.value}`)
+const bottomPadding = computed(() => `padding-bottom: ${bottom.value}`)
+const leftPadding = computed(() => `padding-left: ${left.value}`)
+const rightPadding = computed(() => `padding-right: ${right.value}`)
+const sidePadding = computed(() => isDrawerRight.value ? rightPadding : leftPadding)
 
 const toggleDrawer = () => {
   isDrawerOpen.value = !isDrawerOpen.value
@@ -26,7 +36,7 @@ const goHome = () => {
 </script>
 
 <template>
-  <v-navigation-drawer class="ios-padding" v-model="isDrawerOpen" :location="isDrawerRight ? 'right' : 'left'" color="navbar" disable-route-watcher>
+  <v-navigation-drawer v-model="isDrawerOpen" :style="`${topPadding};${sidePadding};${bottomPadding}`" :location="isDrawerRight ? 'right' : 'left'" color="navbar" disable-route-watcher>
     <v-list class="clean-px px-2 pt-0">
       <v-list-item v-if="showCurrentSpeed">
         <CurrentSpeed />
@@ -63,7 +73,7 @@ const goHome = () => {
     </template>
   </v-navigation-drawer>
 
-  <v-app-bar class="ios-padding">
+  <v-app-bar :style="`${topPadding};${leftPadding};${rightPadding}`">
     <v-app-bar-nav-icon @click="toggleDrawer" />
     <v-app-bar-title class="title">
       <div class="title-wrapper cursor-pointer" @click="goHome">
